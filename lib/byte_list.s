@@ -5,6 +5,7 @@
 ; byte_list_clear(address)
 ; byte_list_intersects(A, B, out)
 ; byte_list_split(list) -> (A, B)
+; byte_list_print(list)
 ; new_byte_list(capacity) -> address
 
 %ifndef BYTE_LIST_H

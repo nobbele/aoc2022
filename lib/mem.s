@@ -1,3 +1,8 @@
+; Memory
+;
+; alloc(size) -> address
+; dealloc(address) -> success
+
 %ifndef MEM_H
 %define MEM_H
 

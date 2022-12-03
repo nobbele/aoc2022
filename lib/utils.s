@@ -2,6 +2,11 @@
 ;
 ; exit -> !
 ; print_num(number) -> ()
+; print_str(address, length)
+;
+; MACROS
+; dbg 1
+; byte_dbg 1
 
 %ifndef UTILS_H
 %define UTILS_H
