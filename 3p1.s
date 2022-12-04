@@ -8,6 +8,7 @@ section .text
 %include "lib/utils.s"
 %include "lib/mem.s"
 %include "lib/list.s"
+%include "lib/fs.s"
 %include "lib/io.s"
 
     PROT_READ equ 0x1
@@ -91,6 +92,3 @@ after_calc:
 
 section .data
     PATH db "day3.txt", 0
-
-    OOB db `Buffer Out-Of-Bounds!\n`, 0
-    OOB_LEN equ 22

@@ -1,8 +1,6 @@
 ; Utilities
 ;
 ; exit -> !
-; print_num(number) -> ()
-; print_str(address, length)
 ;
 ; MACROS
 ; dbg 1
@@ -10,6 +8,8 @@
 
 %ifndef UTILS_H
 %define UTILS_H
+
+%include "lib/io.s"
 
 %macro dbg 1
     push eax
@@ -34,83 +34,55 @@
     pop eax
 %endmacro
 
+%macro swap 2
+    xor %1, %2
+    xor %2, %1
+    xor %1, %2
+%endmacro
+
+; arguments: eax = list, ebx = starting index, ecx = last index
+; returns: eax = number
+parse_num:
+    push ebx
+    push esi
+    ; ebx is counter
+
+    mov esi, eax
+    mov eax, 0
+
+parse_num_loop:
+    cmp ebx, ecx
+    je parse_num_after
+
+    push ecx
+
+    ; multiply eax by 10
+    mov ecx, 10
+    mul ecx
+
+    mov ecx, 0 ; not stricly necessary since 10 < 256
+    mov cl, byte [esi + 8 + ebx] ; read character from buffer
+    sub ecx, 48 ; '0'
+
+    ; add the numeric value to the total
+    add eax, ecx
+
+    pop ecx
+
+    add ebx, 1
+    jmp parse_num_loop
+parse_num_after:
+
+    pop esi
+    pop ebx
+
+    ret
+
 ; return: !
 exit:
     mov eax, 1  ; sys_exit
     mov ebx, 0  ; exit code = 0
     int  0x80
-    ret
-
-; argument: eax = number
-print_num:
-    push eax
-    push ebx
-    push edi
-    push edx
-
-    push dword eax ; [esp+edi+1] = number
-    sub esp, 2
-    mov byte [esp+1], 0
-    mov byte [esp], 10
-
-    mov edi, 1
-print_num_loop:
-    mov eax, dword [esp + edi + 1]
-
-    cmp edi, 1
-    je skip_check
-
-    cmp eax, 0
-    je after_print_num
-skip_check:
-
-    mov edx, 0
-    mov ebx, 10
-    div ebx
-
-    mov dword [esp + edi + 1], eax
-
-    add edx, '0'
-    sub esp, 1
-    mov byte [esp], dl
-
-    add edi, 1
-
-    jmp print_num_loop
-after_print_num:
-    mov eax, esp
-    mov ebx, edi
-    call print_str
-
-    add esp, edi ; deallocate string
-    add esp, 5   ; deallocate NULL + number
-
-    pop edx
-    pop edi
-    pop ebx
-    pop eax
-
-    ret
-
-; arguments: eax = string, ebx = length
-print_str:
-    push eax
-    push ebx
-    push ecx
-    push edx
-
-    mov ecx, eax ; buffer
-    mov edx, ebx ; len
-
-    mov eax, 4   ; sys_write
-    mov ebx, 1   ; stdout
-    int 0x80
-
-    pop edx
-    pop ecx
-    pop ebx
-    pop eax
-
     ret
 
 %endif

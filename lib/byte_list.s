@@ -1,4 +1,5 @@
-; Byte List
+; List containg a series of bytes
+; Not currently dynamically sized but should be easy to implement
 ;
 ; byte_list_get(address, index) -> al = number
 ; byte_list_push(address, bl = number)
@@ -6,10 +7,41 @@
 ; byte_list_intersects(A, B, out)
 ; byte_list_split(list) -> (A, B)
 ; byte_list_print(list)
+; byte_list_find_start(list, start, cl = value) -> index
+; byte_list_find(list, bl = value) -> index
 ; new_byte_list(capacity) -> address
 
 %ifndef BYTE_LIST_H
 %define BYTE_LIST_H
+
+section .data
+
+    OOB db `Buffer Out-Of-Bounds!\n`, 0
+    OOB_LEN equ 22
+
+section .text
+
+
+; arguments: eax = address, ebx = starting index, cl = value
+; returns: eax = index (or -1)
+byte_list_find_start:
+    push ebx
+
+byte_list_find_start_loop:
+    cmp dword [eax], ebx
+    je byte_list_find_start_not_found
+
+    cmp byte [eax+8+ebx], cl
+    je byte_list_find_start_after
+
+    add ebx, 1
+    jmp byte_list_find_start_loop
+byte_list_find_start_not_found:
+    mov ebx, -1
+byte_list_find_start_after:
+    mov eax, ebx
+    pop ebx
+    ret
 
 ; arguments: eax = list
 byte_list_print:

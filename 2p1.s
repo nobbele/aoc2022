@@ -7,6 +7,7 @@ section .text
     global _start
 
 %include "lib/utils.s"
+%include "lib/io.s"
 
 _start:
     call open_file

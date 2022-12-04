@@ -8,6 +8,7 @@
 section .text
     global _start
 
+%include "lib/io.s"
 %include "lib/utils.s"
 
 _start:

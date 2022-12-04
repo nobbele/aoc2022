@@ -1,7 +1,8 @@
-; Double-Word List
+; List containg a series of dwords (similar to byte_list)
 ;
 ; list_get(address, index) -> number
 ; list_push(address, number)
+; list_print(address)
 ; new_list(capacity) -> address
 
 %ifndef LIST_H
@@ -9,6 +10,32 @@
 
 %include "lib/mem.s"
 %include "lib/byte_list.s"
+
+; arguments: eax = address
+list_print:
+    push ebx
+
+    mov ebx, 0
+list_print_loop:
+    cmp dword [eax], ebx
+    je list_print_after
+
+    push eax
+    push ecx
+
+    mov ecx, eax
+    mov eax, dword [ecx + 8 + ebx]
+    call print_num
+
+    pop ecx
+    pop eax
+
+    add ebx, 4
+    jmp list_print_loop
+list_print_after:
+    pop ebx
+
+    ret
 
 ; arguments: eax = address, ebx = index
 ; returns: eax = number

@@ -1,10 +1,20 @@
-; Memory
+; Managing memory such as allocation and deallocation.
 ;
 ; alloc(size) -> address
 ; dealloc(address) -> success
 
 %ifndef MEM_H
 %define MEM_H
+
+section .data
+
+    PROT_READ equ 0x1
+    PROT_WRITE equ 0x2
+
+    MAP_ANONYMOUS equ 0x20
+    MAP_PRIVATE equ 0x2
+
+section .text
 
 ; arguments: eax = address
 ; returns: eax = success (0) or error (non-0)

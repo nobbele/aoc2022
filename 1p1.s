@@ -4,6 +4,7 @@ section .text
     global _start
 
 %include "lib/utils.s"
+%include "lib/io.s"
 
 _start:
     mov eax, 5      ; sys_open
