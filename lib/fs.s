@@ -8,6 +8,9 @@
 
 %include "lib/byte_list.s"
 
+; TODO investigate why this only works at 1 (aka no buffering)
+READ_BUFFER_SIZE equ 1
+
 ; arguments: eax = path string
 ; returns: eax = fd
 open_file:
@@ -29,44 +32,73 @@ read_line:
     push ebx
     push ecx
     push edx
-
-    push eax ; [esp+5] = fd
-    push ebx ; [esp+1] = list
-    sub esp, 1 ; [esp] = buffer
-
+    push ebp
+    push edi
+    
+    push eax                  ; [esp+READ_BUFFER_SIZE+4] = fd
+    push ebx                  ; [esp+READ_BUFFER_SIZE] = list
+    sub esp, READ_BUFFER_SIZE ; [esp] = buffer
+    
+    mov ebp, READ_BUFFER_SIZE
 read_line_loop:
-    mov eax, 3       ; sys_read
-    mov ebx, [esp+5] ; fd
-    mov ecx, esp     ; buffer
-    mov edx, 1       ; len
+    cmp ebp, READ_BUFFER_SIZE
+    jne read_line_after_sys
+    
+    mov ebp, 0
+    
+    mov eax, 3                        ; sys_read
+    mov ebx, [esp+READ_BUFFER_SIZE+4] ; fd
+    mov ecx, esp                      ; buffer
+    mov edx, READ_BUFFER_SIZE         ; len
     int 0x80
-
-    cmp eax, 0
+    
+    mov edi, eax
+read_line_after_sys:
+    cmp edi, READ_BUFFER_SIZE
+    je read_line_after_eof_check
+    
+    cmp ebp, edi
     je read_line_eof ; exit if eof found
+read_line_after_eof_check:
 
-    cmp byte [esp], 10
+    cmp byte [esp+ebp], 10
     je read_line_success ; exit if character = '\n'
 
-    mov eax, dword [esp+1]
+    mov eax, dword [esp+READ_BUFFER_SIZE]
     mov ebx, 0
-    mov bl, byte [esp]
+    mov bl, byte [esp+ebp]
     call byte_list_push
 
+    add ebp, 1
     jmp read_line_loop
 read_line_eof:
-    mov eax, dword [esp+1] ; load list
+    mov eax, dword [esp+READ_BUFFER_SIZE] ; load list
 
     ; treat EOF as newline if list.size == 0
     cmp dword [eax], 0
     jne read_line_success
-
+    
     mov eax, -1
     jmp read_line_after
 read_line_success:
     mov eax, 0
 read_line_after:
-    add esp, 9 ; deallocate 4 + 4 + 1 bytes
+    sub ebp, (READ_BUFFER_SIZE - 1)
+    ; ebp = bytes left in the input buffer
+    
+    
+    push eax
+    mov eax, 19       ; sys_lseek
+    mov ebx, [esp+4+READ_BUFFER_SIZE+4] ; fd
+    mov ecx, ebp ; offset = READ_BUFFER_SIZE - 1 - (bytes read)
+    mov edx, 1 ; SEEK_CUR
+    int 0x80
+    pop eax
+    
+    add esp, 8+READ_BUFFER_SIZE
 
+    pop edi
+    pop ebp
     pop edx
     pop ecx
     pop ebx

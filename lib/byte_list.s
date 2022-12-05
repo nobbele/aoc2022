@@ -1,12 +1,14 @@
 ; List containg a series of bytes
 ; Not currently dynamically sized but should be easy to implement
 ;
-; byte_list_get(address, index) -> al = number
+; byte_list_get(address, index) -> number
+; byte_list_pop(address) -> al = number
 ; byte_list_push(address, bl = number)
 ; byte_list_clear(address)
 ; byte_list_intersects(A, B, out)
 ; byte_list_split(list) -> (A, B)
 ; byte_list_print(list)
+; byte_list_reverse(address)
 ; byte_list_find_start(list, start, cl = value) -> index
 ; byte_list_find(list, bl = value) -> index
 ; new_byte_list(capacity) -> address
@@ -21,6 +23,82 @@ section .data
 
 section .text
 
+; arguments: eax = address
+; returns: eax = number or -1 if invalid
+byte_list_pop:
+    push ecx
+    push ebx
+
+    mov ecx, dword [eax] ; size
+
+    cmp ecx, 0
+    je byte_list_pop_oob ; if size = 0: OOB error
+
+    mov bl, byte [eax + 8 + ecx - 1]
+    sub dword [eax], 1
+
+    jmp byte_list_pop_after
+byte_list_pop_oob:
+    push eax
+    push ebx
+    mov eax, OOB
+    mov ebx, OOB_LEN
+    call print_str
+    pop ebx
+    pop eax
+    mov eax, -1
+byte_list_pop_after:
+    mov eax, 0
+    mov al, bl
+    
+    pop ebx
+    pop ecx
+
+    ret
+
+; Yes this is overly complex, I can't be bothered to reason about swaps
+; arguments: eax = address
+byte_list_reverse:
+    push ebx
+    push ecx
+    push edx
+    
+    mov edx, 0
+
+    mov ebx, dword [eax] ; load length
+    
+    cmp ebx, 1 ; skip reversal if 1 element long
+    je byte_list_reverse_pop_after
+
+    mov ecx, ebx ; ecx is iterator
+byte_list_reverse_push_loop:
+    cmp ecx, 0
+    je byte_list_reverse_push_after
+    sub ecx, 1
+    
+    mov dl, byte [eax+8+ecx]
+    push dx
+    
+    jmp byte_list_reverse_push_loop
+byte_list_reverse_push_after:
+
+    ; ebx is iterator
+byte_list_reverse_pop_loop:
+    cmp ebx, 0
+    je byte_list_reverse_pop_after
+    sub ebx, 1
+    
+    pop dx
+    mov byte [eax+8+ebx], dl
+    
+    jmp byte_list_reverse_pop_loop
+byte_list_reverse_pop_after:
+    
+    pop edx
+    pop ecx
+    pop ebx
+
+    ret
 
 ; arguments: eax = address, ebx = starting index, cl = value
 ; returns: eax = index (or -1)
@@ -195,7 +273,7 @@ byte_list_clear:
     ret
 
 ; arguments: eax = address, ebx = index
-; returns: al = number (or -1 if invalid)
+; returns: eax = number (or -1 if invalid)
 byte_list_get:
     push ebx
     push ecx
@@ -228,7 +306,6 @@ byte_list_get_after:
 ; returns: eax = -1 if invalid
 byte_list_push:
     push ecx
-    push edi
 
     mov ecx, dword [eax] ; size
 
@@ -249,7 +326,6 @@ byte_list_push_oob:
     pop eax
     mov eax, -1
 byte_list_push_after:
-    pop edi
     pop ecx
 
     ret

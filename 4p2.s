@@ -1,6 +1,4 @@
 ; Day 4 Part 1 of AoC 2022
-;
-; Parsing this day was kinda annoying, lots of duplicate code
 
 section .text
     global _start

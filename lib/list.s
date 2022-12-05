@@ -3,6 +3,7 @@
 ; list_get(address, index) -> number
 ; list_push(address, number)
 ; list_print(address)
+; list_clear(address)
 ; new_list(capacity) -> address
 
 %ifndef LIST_H
@@ -10,6 +11,10 @@
 
 %include "lib/mem.s"
 %include "lib/byte_list.s"
+
+; arguments: eax = address
+list_clear:
+    jmp byte_list_clear
 
 ; arguments: eax = address
 list_print:

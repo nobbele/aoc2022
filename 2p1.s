@@ -1,7 +1,9 @@
 ; Day 2 Part 1 of AoC 2022
 ;
-; Uses the modulo solution instead of conditional
-; (Saves 5 lines)
+; This one uses modulo rather than a bunch of conditionals but
+; ends up being about the same length due to needing to
+; fix edx and saving eax and moving from/to eax
+; (saves 14 lines)
 
 section .text
     global _start

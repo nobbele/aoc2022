@@ -1,6 +1,4 @@
 ; Day 3 Part 1 of AoC 2022
-;
-; Wow this took a lot of code and time to make
 
 section .text
     global _start
