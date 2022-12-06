@@ -25,6 +25,33 @@ open_file:
     pop ecx
     pop ebx
     ret
+    
+; arguments: eax = fd, ebx = list, ecx = count
+; returns: eax = bytes read
+read_n:
+    push ebx
+    push ecx
+    push edx
+    push esi
+    
+    mov esi, ebx ; store list in esi
+    
+    mov edx, ecx ; len
+    mov ebx, dword [esi] ; load list length
+    lea ecx, [esi+8+ebx] ; buffer
+
+    mov ebx, eax ; fd
+    mov eax, 3   ; sys_read
+    int 0x80
+    
+    add dword [esi], eax
+    
+    pop esi
+    pop edx
+    pop ecx
+    pop ebx
+
+    ret
 
 ; arguments: eax = fd, ebx = list
 ; returns: eax = 0 if success, -1 if failure

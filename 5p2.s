@@ -14,7 +14,7 @@ _start:
     ; [esp+8] = input buffer
     ; [esp+4] = list of towers
     ; [esp] = fd
-    sub esp, 8
+    sub esp, 12
 
     mov eax, PATH
     call open_file
@@ -184,7 +184,7 @@ deallocate_stacks_after:
     mov eax, dword [esp+8]
     call dealloc
 
-    add esp, 8
+    add esp, 12
 
     call exit
     
